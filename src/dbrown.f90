@@ -60,18 +60,18 @@ program main
 
     ! Check if there is a previous configuration
     inquire(file='finalconBD.dat', exist=exists)
-    open(newunit=u, file='finalconBD.dat', status="old", action="read")
     ! If so, load it
     if (exists) then
+        open(newunit=u, file='finalconBD.dat', status="old", action="read")
         write(unit=output_unit, fmt='(a)') 'Reading positions from file...'
         do i = 1, np
             read(u, *) x(i), y(i), z(i)
         end do
+        close(u)
     ! If not, create a new configuration
     else
         call iniconfig(x, y, z, d)
     end if
-    close(u)
     ! Energy of the initial configuration
     call force <<< grid, tBlock >>> (x, y, z, fx_d, fy_d, fz_d, enerpot, zfac)
     istat = cudaDeviceSynchronize()
