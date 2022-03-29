@@ -32,8 +32,9 @@ contains
         end do
     end subroutine iniconfig
 
-    subroutine parse_input(filein, limg, limt)
+    subroutine parse_input(filein, limg, limt, initconf)
         character(len=*), intent(in) :: filein
+        logical, intent(inout) :: initconf
         integer, intent(inout) :: limg, limt
 
         !! Local variables
@@ -44,6 +45,7 @@ contains
         read(u, *) phi ! Density
         read(u, *) limt ! Thermalization steps
         read(u, *) limg ! Averaging steps
+        read(u, *) initconf
         close(u)
         
     end subroutine parse_input

@@ -27,10 +27,10 @@ program main
     integer :: i, istep, nprom, j, u
     real :: dv, fnorm, pressure, compressibility
     integer :: limT, limG, pbc, avefreq, threenp
-    logical :: exists
+    logical :: exists, init_config
 
     !! Read the inputs from the file
-    call parse_input("input.in", limG, limT)
+    call parse_input("input.in", limG, limT, init_config)
     ! Variable initialization
     rho = 6.0 * phi / pi
     boxl = (real(np) / rho)**(1.0/3.0)
@@ -63,7 +63,7 @@ program main
     ! Check if there is a previous configuration
     inquire(file='finalconBD.dat', exist=exists)
     ! If so, load it
-    if (exists) then
+    if (exists .and. init_config) then
         open(newunit=u, file='finalconBD.dat', status="old", action="read")
         write(unit=output_unit, fmt='(a)') 'Reading positions from file...'
         do i = 1, np
