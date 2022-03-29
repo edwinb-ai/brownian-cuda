@@ -129,6 +129,8 @@ program main
     ! Open file for production run
     open(newunit=u, file='energy_BD_prod.dat', status='unknown')
     
+    ! Turn off periodic boundary conditions
+    pbc = 0
     write(unit=output_unit, fmt='(a)') 'Step, Upot, Press, Z'
     do istep = 1, limG
         ! Compute the random numbers
