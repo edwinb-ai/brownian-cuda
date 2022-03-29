@@ -25,19 +25,19 @@ program main
     ! Local variables
     real :: d, virial, epotn
     integer :: i, istep, nprom, j, u
-    real :: dv, fnorm, pressure, sqtwodt, compressibility
+    real :: dv, fnorm, pressure, compressibility
     integer :: limT, limG, pbc, avefreq, threenp
+    logical :: exists
 
     ! Variable initialization
     threenp = 3 * np
     d = (1.0 / rho)**(1.0/3.0) ! Interparticle distance
     avefreq = 10000 ! Average frequency
-    sqtwodt = sqrt(2.0 * deltat)
     ! Always start with PBC
     pbc = 1
     ! Thermalization and equilibrium steps
-    limT = 1500000
-    limG = 3000000
+    limT = 3000000
+    limG = 7500000
 
     ! Initialize arrays
     allocate(x(np), y(np), z(np), source=0.0)
@@ -50,22 +50,35 @@ program main
     write(unit=output_unit, fmt='(a, 8f)'), 'The mean interparticle distance is: ', d
     write(unit=output_unit, fmt='(a, 8f)'), 'Cut radius: ', rc
     write(unit=output_unit, fmt='(a, 8f)'), 'Reduced temperature: ', ktemp
+    write(unit=output_unit, fmt='(a, i)'), 'Number of particles: ', np
 
     ! Initialize CUDA kernel variables
     tBlock = dim3(blksz, 1, 1)
     istat = cudaDeviceGetAttribute(numSMs, cudaDevAttrMultiProcessorCount, 0)
     grid = 32 * numSMs
     write(unit=output_unit, fmt='(2i8)') grid%x, numSMs
+
+    ! Check if there is a previous configuration
+    inquire(file='finalconBD.dat', exist=exists)
+    open(newunit=u, file='finalconBD.dat', status="old", action="read")
+    ! If so, load it
+    if (exists) then
+        write(unit=output_unit, fmt='(a)') 'Reading positions from file...'
+        do i = 1, np
+            read(u, *) x(i), y(i), z(i)
+        end do
+    ! If not, create a new configuration
+    else
+        call iniconfig(x, y, z, d)
+    end if
+    close(u)
+    ! Energy of the initial configuration
     call force <<< grid, tBlock >>> (x, y, z, fx_d, fy_d, fz_d, enerpot, zfac)
     istat = cudaDeviceSynchronize()
     if ( istat .ne. 0 ) then
         write(unit=u, fmt='(a)') 'Error with GPU!'
     end if
-
-    ! Create a new configuration
-    call iniconfig(x, y, z, d)
-    ! Energy of the initial configuration
-    write(unit=output_unit, fmt='(a, 8f)'), 'E/N=', sum(enerpot)/real(np)
+    write(unit=output_unit, fmt='(a,8f)') 'E/N=', sum(enerpot) / real(np)
 
     ! Initialize the PRNG
     call initialize_rng(gen)
@@ -102,11 +115,12 @@ program main
     end do
     close (u)
 
-    write(unit=u, fmt='(a)'), 'The system has thermalized'
+    write(unit=output_unit, fmt='(a)') 'The system has thermalized'
 
+    ! Save positions to file for re-use in other runs
     open(newunit=u, file='finalconBD.dat', status='unknown')
     do i = 1, np
-        write(unit=u, '(3f16.8)') x(i), y(i), z(i)
+        write(u, '(3f16.8)') x(i), y(i), z(i)
     end do
     close(u)
 
@@ -139,6 +153,8 @@ program main
                 compressibility
             ! Print to file 'u'
             write(unit=u, fmt='(i,3f16.8)') istep, epotn, pressure, compressibility
+            ! Save snapshots to file
+            call snapshots(x, y, z, istep, 'production.xyz')
         end if
     end do
     

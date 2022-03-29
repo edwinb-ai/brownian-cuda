@@ -3,10 +3,8 @@ module utils
     
     implicit none
     
-    public iniconfig
-
-    contains
-
+    public iniconfig, snapshots
+contains
     subroutine iniconfig(xc, yc, zc, d)
     ! defining three vector of mp dimension, it indicate that only are out variables
         real, intent(out) :: xc(:), yc(:), zc(:)
@@ -33,4 +31,36 @@ module utils
             end if
         end do
     end subroutine iniconfig
+
+    subroutine snapshots(x, y, z, istep, filename)
+        ! Arguments
+        real, intent(in) :: x(:), y(:), z(:)
+        integer, intent(in) :: istep
+        character(len=*), intent(in) :: filename
+
+        ! Local variables
+        logical :: exists
+        integer :: io, i, arrsize
+
+        arrsize = size(x)
+
+        inquire(file=filename, exist=exists)
+        if (exists) then
+            open(newunit=io, file=filename, position="append", &
+                & status="old", action="write")
+            write(io, fmt='(i4)') arrsize
+            write(io, fmt='(i6.4)') istep
+        else
+            open(newunit=io, file=filename, status="new", action="write")
+            write(io, fmt='(i4)') arrsize
+            write(io, fmt='(i6.4)') istep
+        end if
+
+        do i = 1, arrsize
+            write(io, fmt='(i1,A,f11.8,A,f12.8,A,f12.8)') 1, ' ', x(i), ' ', &
+                & y(i), ' ', z(i)
+        end do
+
+        close(io)
+    end subroutine snapshots
 end module utils
