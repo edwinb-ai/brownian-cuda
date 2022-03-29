@@ -29,15 +29,17 @@ program main
     integer :: limT, limG, pbc, avefreq, threenp
     logical :: exists
 
+    !! Read the inputs from the file
+    call parse_input("input.in", limG, limT)
     ! Variable initialization
+    rho = 6.0 * phi / pi
+    boxl = (real(np) / rho)**(1.0/3.0)
+    rc = boxl / 2.0
     threenp = 3 * np
     d = (1.0 / rho)**(1.0/3.0) ! Interparticle distance
     avefreq = 10000 ! Average frequency
     ! Always start with PBC
     pbc = 1
-    ! Thermalization and equilibrium steps
-    limT = 3000000
-    limG = 7500000
 
     ! Initialize arrays
     allocate(x(np), y(np), z(np), source=0.0)

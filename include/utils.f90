@@ -3,7 +3,7 @@ module utils
     
     implicit none
     
-    public iniconfig, snapshots
+    public iniconfig, snapshots, parse_input
 contains
     subroutine iniconfig(xc, yc, zc, d)
     ! defining three vector of mp dimension, it indicate that only are out variables
@@ -31,6 +31,22 @@ contains
             end if
         end do
     end subroutine iniconfig
+
+    subroutine parse_input(filein, limg, limt)
+        character(len=*), intent(in) :: filein
+        integer, intent(inout) :: limg, limt
+
+        !! Local variables
+        integer :: u
+
+        open(newunit=u, file=filein, status="old", action="read")
+        !! Read the inputs from the file
+        read(u, *) phi ! Density
+        read(u, *) limt ! Thermalization steps
+        read(u, *) limg ! Averaging steps
+        close(u)
+        
+    end subroutine parse_input
 
     subroutine snapshots(x, y, z, istep, filename)
         ! Arguments

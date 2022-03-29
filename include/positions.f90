@@ -5,9 +5,7 @@ module positions
     implicit none
     
     public position
-
-    contains
-
+contains
     attributes(global) subroutine position(x,y,z,fx,fy,fz,randv,pbc)
         real, intent(in) :: fx(:), fy(:), fz(:)
         real, intent(inout) :: x(:), y(:), z(:)
