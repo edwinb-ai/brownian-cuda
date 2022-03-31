@@ -3,7 +3,7 @@ module utils
     
     implicit none
     
-    public iniconfig, snapshots, parse_input
+    public iniconfig, snapshots, parse_input, save_timeseries
 contains
     subroutine iniconfig(xc, yc, zc, d)
     ! defining three vector of mp dimension, it indicate that only are out variables
@@ -75,10 +75,40 @@ contains
         end if
 
         do i = 1, arrsize
-            write(io, fmt='(i1,A,f11.8,A,f12.8,A,f12.8)') 1, ' ', x(i), ' ', &
+            write(io, fmt='(i1,A,f12.8,A,f12.8,A,f12.8)') 1, ' ', x(i), ' ', &
                 & y(i), ' ', z(i)
         end do
 
         close(io)
     end subroutine snapshots
+
+    subroutine save_timeseries(filename, x, y, z)
+        ! Arguments
+        real, intent(in) :: x(:), y(:), z(:)
+        character(len=*), intent(in) :: filename
+        ! Local variables
+        character(len=1024) :: newname
+        character(len=8) :: x1
+        integer :: i, n, u
+        logical :: exists
+
+        n = size(x)
+
+        ! Loop over all particles
+        do i = 1, n
+            ! Programatically change the name of the file
+            write(x1, fmt='(i5.1)') i
+            newname = filename//trim(adjustl(x1))//'.csv'
+            inquire(file=newname, exist=exists)
+            if (exists) then
+                open(newunit=u, file=newname, position="append", &
+                    & status="old", action="write")
+                write(u, fmt='(f12.8,A,f12.8,A,f12.8)') x(i),',',y(i),',',z(i)
+            else
+                open(newunit=u, file=newname, status="new", action="write")
+                write(u, fmt='(f12.8,A,f12.8,A,f12.8)') x(i),',',y(i),',',z(i)
+            end if
+            close(u)
+        end do
+    end subroutine save_timeseries
 end module utils

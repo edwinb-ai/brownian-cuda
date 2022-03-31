@@ -158,7 +158,7 @@ program main
             ! Print to file 'u'
             write(unit=u, fmt='(i,3f16.8)') istep, epotn, pressure, compressibility
             ! Save snapshots to file
-            call snapshots(x, y, z, istep, 'production.xyz')
+            call save_timeseries("msd_data/positions", x, y, z)
         end if
     end do
     
