@@ -3,7 +3,8 @@ module utils
     
     implicit none
     
-    public iniconfig, snapshots, parse_input, save_timeseries
+    public iniconfig, snapshots, parse_input, save_timeseries, &
+        & save_snapshots
 contains
     subroutine iniconfig(xc, yc, zc, d)
     ! defining three vector of mp dimension, it indicate that only are out variables
@@ -111,4 +112,36 @@ contains
             close(u)
         end do
     end subroutine save_timeseries
+
+    subroutine save_snapshots(filename, x, y, z, istep)
+        ! Arguments
+        real, intent(in) :: x(:), y(:), z(:)
+        character(len=*), intent(in) :: filename
+        integer, intent(in) :: istep
+        ! Local variables
+        character(len=1024) :: newname
+        character(len=8) :: x1
+        integer :: i, n, u
+        logical :: exists
+
+        n = size(x)
+
+        ! Loop over all particles
+        ! Programatically change the name of the file
+        write(x1, fmt='(i5.1)') istep
+        newname = filename//trim(adjustl(x1))//'.csv'
+        inquire(file=newname, exist=exists)
+        if (exists) then
+            open(newunit=u, file=newname, position="append", &
+            & status="old", action="write")
+        else
+            open(newunit=u, file=newname, status="new", action="write")
+        end if
+
+        do i = 1, n
+            write(u, fmt='(f12.8,A,f12.8,A,f12.8)') x(i),',',y(i),',',z(i)
+        end do
+        
+        close(u)
+    end subroutine save_snapshots
 end module utils
