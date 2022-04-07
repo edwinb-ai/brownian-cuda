@@ -31,11 +31,10 @@ contains
 
     end subroutine initialize_rng
 
-    subroutine fill_vec(vec, rng, threenp, sqtwodt)
+    subroutine fill_vec(vec, rng, threenp)
         real, device, intent(inout) :: vec(:)
         type(curandGenerator), intent(in) :: rng
         integer, intent(in) :: threenp
-        real, intent(in) :: sqtwodt
     
         ! Local variables
         integer :: istat, i
@@ -56,11 +55,10 @@ contains
         end do
     end subroutine fill_vec
 
-    subroutine fill_vec_normal(vec, rng, threenp, sqtwodt)
+    subroutine fill_vec_normal(vec, rng, threenp)
         real, device, intent(inout) :: vec(:)
         type(curandGenerator), intent(in) :: rng
         integer, intent(in) :: threenp
-        real, intent(in) :: sqtwodt
     
         ! Local variables
         integer :: istat, i

@@ -90,7 +90,7 @@ program main
     write(unit=output_unit, fmt='(a)') 'Step, Upot, Press, Z'
     do istep = 1, limT
         ! Compute the random numbers
-        call fill_vec(randv, gen, threenp, sqtwodt)
+        call fill_vec(randv, gen, threenp)
 
         call position <<< grid, tBlock >>> (x, y, z, fx_d, fy_d, fz_d, randv, pbc)
         call force <<< grid, tBlock >>> (x, y, z, fx_d, fy_d, fz_d, enerpot, zfac)
@@ -134,7 +134,7 @@ program main
     write(unit=output_unit, fmt='(a)') 'Step, Upot, Press, Z'
     do istep = 1, limG
         ! Compute the random numbers
-        call fill_vec(randv, gen, threenp, sqtwodt)
+        call fill_vec(randv, gen, threenp)
 
         call position <<< grid, tBlock >>> (x, y, z, fx_d, fy_d, fz_d, randv, pbc)
         call force <<< grid, tBlock >>> (x, y, z, fx_d, fy_d, fz_d, enerpot, zfac)
