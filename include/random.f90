@@ -13,15 +13,27 @@ contains
         type(curandGenerator), intent(inout) :: rng
 
         ! Local variables
-        real :: seed
-        integer :: host_seed, istat, largest
+        real :: some_seed
+        integer, allocatable :: seed(:)
+        integer :: host_seed, istat, largest, io, n
 
-        ! Initialize PRNGs
-        call random_seed()
+        ! Initialize PRNG
+        call random_seed(size=n)
+        allocate(seed(n))
+        ! Read from urandom file
+        open(newunit=io, file="/dev/urandom", access="stream", form="unformatted", &
+            action="read", status="old", iostat=istat)
+        if (istat==0) then
+            read(io, iostat=istat) seed
+            close(io)
+        endif
+        ! Set the final seed
+        call random_seed(put=seed)
+        ! Initialize the PRNG for the device
         istat = curandCreateGenerator(rng, CURAND_RNG_PSEUDO_DEFAULT)
-        call random_number(seed)
         ! Compute the seed for the largest 32-bit integer
-        host_seed = floor(seed * huge(largest))
+        call random_number(some_seed)
+        host_seed = floor(some_seed * huge(largest))
         ! Show the seed to screen
         write(unit=output_unit, fmt='(a,i)') 'Random seed =', host_seed
         istat = curandSetPseudoRandomGeneratorSeed(rng, host_seed)
